@@ -79,31 +79,35 @@ public class Map extends Fragment {
              paint = new Paint();
          }
 
-        @Override
-        protected void onDraw(Canvas canvas) {
+         @Override
+         protected void onDraw(Canvas canvas) {
              super.onDraw(canvas);
 
-             // Draw map
-             Bitmap map = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.cotton_level_2);
+             int offsetX = 60;
+             int offsetY = 30;
 
-             double scale = 2.1; // How much to scale map image by
+             // Draw floor-plan
+             Bitmap floorPlan = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.cotton_level_2);
+
+             double scale = 2.1; // How much to scale floor plan by
              int right = (int) (437 * scale);
              int bottom = (int) (710 * scale);
-             // Rotate map
+             // Rotate floor-plan
              Matrix matrix = new Matrix();
-             matrix.postRotate(-90.0f);
-             Bitmap rotatedMap = Bitmap.createBitmap(map, 0, 0, map.getWidth(), map.getHeight(), matrix, true);
-             // Add map to canvas
-             canvas.drawBitmap(rotatedMap, null, new Rect(100, 0, right, bottom), null);
+             matrix.postRotate(90.0f);
+             Bitmap rotatedFloorPlan = Bitmap.createBitmap(floorPlan, 0, 0, floorPlan.getWidth(), floorPlan.getHeight(), matrix, true);
+             // Add floor-plan to canvas
+             canvas.drawBitmap(rotatedFloorPlan, null, new Rect(0, 0, right, bottom), null);
 
+             drawAccessPoint(0, 0, offsetX, offsetY, canvas);
+         }
 
-//             int x = getWidth();
-//             int y = getHeight();
-//             int radius;
-//             radius = 100;
-//             // Use Color.parseColor to define HTML colors
-//             paint.setColor(Color.parseColor("#CD5C5C"));
-//             canvas.drawCircle(x / 2, y / 2, radius, paint);
+         protected void drawAccessPoint(int x, int y, int offsetX, int offsetY, Canvas canvas) {
+             int cx = x + offsetX;
+             int cy = x + offsetY;
+             int radius = 20;
+             paint.setColor(Color.BLUE);
+             canvas.drawCircle(cx, cy, radius, paint);
          }
     }
 }
