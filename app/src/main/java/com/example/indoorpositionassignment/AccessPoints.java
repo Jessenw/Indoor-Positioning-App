@@ -1,41 +1,32 @@
 package com.example.indoorpositionassignment;
 
-import android.widget.ArrayAdapter;
-import android.os.Bundle;
+
 import android.content.Context;
-import android.support.v4.app.Fragment;
-import android.os.Handler;
-import android.view.LayoutInflater;
-import android.widget.ListView;
-import android.net.wifi.ScanResult;
 import android.net.Uri;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiManager;
+import android.os.Bundle;
+import android.os.Handler;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.net.wifi.WifiManager;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link AccessPoints.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link AccessPoints#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class AccessPoints extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
     private ListView listView;
 
-    public AccessPoints() {
-        // Required empty public constructor
-    }
+    public AccessPoints() { /* Required empty public constructor */ }
 
     public static AccessPoints newInstance() {
         AccessPoints fragment = new AccessPoints();
@@ -48,7 +39,6 @@ public class AccessPoints extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         listView = getActivity().findViewById(R.id.access_point_list);
     }
 
@@ -64,8 +54,7 @@ public class AccessPoints extends Fragment {
             @Override
             public void run() {
                 // Make sure that this fragment is attached to the activity
-                if (isAdded() == true)
-                    generateAccessPointList(rootView);
+                if (isAdded() == true) generateAccessPointList(rootView);
                 handler.postDelayed(this, 100);
             }
         }, 100);
@@ -103,12 +92,11 @@ public class AccessPoints extends Fragment {
         ArrayList<AccessPoint> accessPointList = new ArrayList<>();
         if (results != null) {
             final int size = results.size();
-            if (size == 0) { /* No results handling goes here */ }
+            if (size == 0) { /* "No results" handling goes here */ }
             else {
                 for (int i = 0; i < size; i++) {
                     ScanResult result = results.get(i);
-                    if (true) {
-                        // if (result.SSID.contains("victoria")) {
+                    if (result.SSID.contains("")) {
                         double distance = getDistance(result.level, result.frequency);
                         AccessPoint accessPoint = new AccessPoint(result.SSID, result.BSSID, result.level, distance);
                         accessPointList.add(accessPoint);
@@ -122,21 +110,20 @@ public class AccessPoints extends Fragment {
                         double distance1 = o1.getDistance();
                         double distance2 = o2.getDistance();
 
-                        if (distance1 > distance2) { return 1; }
-                        else if (distance1 < distance2) { return -1; }
-                        else { return 0; }
+                        if (distance1 > distance2) return 1;
+                        else if (distance1 < distance2) return -1;
+                        else return 0;
                     }
                 });
 
-                // convert AccessPoint objects into String's
+                // Convert AccessPoint objects into String's
                 String[] values = new String[accessPointList.size()];
                 for (int i = 0; i < accessPointList.size(); i++) {
-                    if (accessPointList.get(i) != null) {
+                    if (accessPointList.get(i) != null)
                         values[i] = accessPointList.get(i).toString();
-                    }
                 }
 
-                // set data up for ListView
+                // Set data up for ListView
                 ArrayAdapter<String> adapter = new ArrayAdapter<>(rootView.getContext(),
                         android.R.layout.simple_list_item_1, android.R.id.text1, values);
 
