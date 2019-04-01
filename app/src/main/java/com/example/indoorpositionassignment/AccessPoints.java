@@ -60,9 +60,19 @@ public class AccessPoints extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_access_points, container, false);
+        final View rootView = inflater.inflate(R.layout.fragment_access_points, container, false);
+
         listView = rootView.findViewById(R.id.access_point_list);
-        generateAccessPointList(rootView);
+
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                generateAccessPointList(rootView);
+                handler.postDelayed(this, 100);
+            }
+        }, 100);
+
         return rootView;
     }
 
@@ -70,8 +80,6 @@ public class AccessPoints extends Fragment {
         WifiManager wifiManager = (WifiManager) getContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiManager.startScan();
         List<ScanResult> results = wifiManager.getScanResults();
-        System.out.println("##### RESULTS: " + results.size() + " #####");
-        System.out.println(results);
 
         // Filter data from scan results
         ArrayList<AccessPoint> accessPointList = new ArrayList<>();

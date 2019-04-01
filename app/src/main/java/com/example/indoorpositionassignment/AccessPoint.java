@@ -32,7 +32,6 @@ public class AccessPoint implements Comparator<AccessPoint> {
         return distance;
     }
 
-
     public int compare(AccessPoint o1, AccessPoint o2) {
         double distance1 = o1.getDistance();
         double distance2 = o2.getDistance();
