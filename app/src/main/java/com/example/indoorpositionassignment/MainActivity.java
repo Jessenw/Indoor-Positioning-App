@@ -1,7 +1,10 @@
 package com.example.indoorpositionassignment;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
@@ -12,9 +15,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AccessPoints.OnFragmentInteractionListener, Map.OnFragmentInteractionListener {
 
     int MY_PERMISSION_FINE_LOCATION = 0;
+
+    WifiManager wifiManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +35,9 @@ public class MainActivity extends AppCompatActivity {
             System.out.println("ACCESS_FINE_LOCATION: PERMISSION_GRANTED");
         else
             System.out.println("ACCESS_FINE_LOCATION: PERMISSION_DENIED");
+
+        // Create Wifi Manager
+        wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.navigation);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -58,5 +66,14 @@ public class MainActivity extends AppCompatActivity {
 
         // Accessing menu item programmatically
         // bottomNavigationView.getMenu().getItem(1).setChecked(true);
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+        
+    }
+
+    public WifiManager getWifiManager() {
+        return wifiManager;
     }
 }
