@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/access_points_menu_item"
+        android:icon="@drawable/ic_launcher_background"
+        android:title="Access Points"/>
+    <item
+        android:id="@+id/map_menu_item"
+        android:icon="@drawable/ic_launcher_background"
+        android:title="Map"/>
+</menu>
