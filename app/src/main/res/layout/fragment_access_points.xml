@@ -5,9 +5,10 @@
     android:layout_height="match_parent"
     tools:context="com.example.indoorpositionassignment.AccessPoints">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Access Points Fragment"/>
+    <ListView
+        android:id="@+id/access_point_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
 
 </RelativeLayout>
