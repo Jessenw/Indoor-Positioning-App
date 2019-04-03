@@ -166,6 +166,28 @@ public class Map extends Fragment {
                      i++;
                  }
              }
+
+             // Draw bounding box of access points radius
+             if (strongestAccessPoints != null) {
+                 for (AccessPointLocation accessPointLocation : strongestAccessPoints) {
+                     drawBoundingBox(accessPointLocation, offsetX, offsetY, canvas);
+                 }
+             }
+         }
+
+         protected void drawBoundingBox(AccessPointLocation accessPointLocation, int offsetX, int offsetY, Canvas canvas) {
+             Rect rect = new Rect();
+             rect.bottom = accessPointLocation.getY() * 10 + offsetY + (int) accessPointLocation.getDistance() * 5;
+             rect.left = accessPointLocation.getX() * 10 + offsetX - (int) accessPointLocation.getDistance() * 5;
+             rect.right = accessPointLocation.getX() * 10 + offsetX + (int) accessPointLocation.getDistance() * 5;
+             rect.top = accessPointLocation.getY() * 10 + offsetY - (int) accessPointLocation.getDistance() * 5;
+
+             paint.setStyle(Paint.Style.STROKE);
+             paint.setStrokeWidth(2.0f);
+             paint.setColor(Color.rgb(255, 165, 0));
+             canvas.drawRect(rect, paint);
+             paint.setStyle(Paint.Style.FILL);
+
          }
 
          protected void drawAccessPoint(int x, int y, int offsetX, int offsetY, Canvas canvas) {
