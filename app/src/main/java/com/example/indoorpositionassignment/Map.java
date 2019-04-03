@@ -148,8 +148,21 @@ public class Map extends Fragment {
              // Draw distance radius of closest access points
              ArrayList<AccessPointLocation> strongestAccessPoints = getClosestAccessPoints();
 
+             int i = 0;
              for (AccessPointLocation accessPointLocation : strongestAccessPoints) {
+                 switch (i) {
+                     case 0:
+                         paint.setColor(Color.RED);
+                         break;
+                     case 1:
+                         paint.setColor(Color.GREEN);
+                         break;
+                     case 2:
+                         paint.setColor(Color.CYAN);
+                         break;
+                 }
                  drawClosestAccessPoint(accessPointLocation, offsetX, offsetY, canvas);
+                 i++;
              }
          }
 
@@ -168,13 +181,13 @@ public class Map extends Fragment {
 
              // Draw distance radius
              float areaRadius = (float) accessPointLocation.getDistance() * 5;
-             paint.setColor(Color.GREEN);
-             paint.setAlpha(30);
+             paint.setAlpha(60);
              canvas.drawCircle(cx, cy, areaRadius, paint);
 
              // Change access point location color to red
              float locationRadius = 10.0f;
              paint.setColor(Color.RED);
+             paint.setAlpha(255);
              canvas.drawCircle(cx, cy, locationRadius, paint);
          }
 
