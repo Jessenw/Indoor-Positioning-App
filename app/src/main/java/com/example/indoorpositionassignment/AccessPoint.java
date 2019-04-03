@@ -8,12 +8,14 @@ public class AccessPoint implements Comparator<AccessPoint> {
     private String BSSID;       // MAC Address
     private int    level;       // signal strength
     private double distance;    // approximate distance to AP
+    private int frequency;
 
-    public AccessPoint(String SSID, String BSSID, int level, double distance) {
+    public AccessPoint(String SSID, String BSSID, int level, double distance, int frequency) {
         this.SSID = SSID;
         this.BSSID = BSSID;
         this.level = level;
         this.distance = distance;
+        this.frequency = frequency;
     }
 
     public String getSSID() {
@@ -30,6 +32,10 @@ public class AccessPoint implements Comparator<AccessPoint> {
 
     public double getDistance() {
         return distance;
+    }
+
+    public int getFrequency() {
+        return frequency;
     }
 
     public int compare(AccessPoint o1, AccessPoint o2) {

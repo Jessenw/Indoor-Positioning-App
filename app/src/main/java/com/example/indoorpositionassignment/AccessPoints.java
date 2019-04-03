@@ -98,7 +98,7 @@ public class AccessPoints extends Fragment {
                     ScanResult result = results.get(i);
                     if (result.SSID.contains("")) {
                         double distance = getDistance(result.level, result.frequency);
-                        AccessPoint accessPoint = new AccessPoint(result.SSID, result.BSSID, result.level, distance);
+                        AccessPoint accessPoint = new AccessPoint(result.SSID, result.BSSID, result.level, distance, result.frequency);
                         accessPointList.add(accessPoint);
                     }
                 }

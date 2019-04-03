@@ -6,6 +6,7 @@ public class AccessPointLocation {
     private String desc;
     private int x, y;
     private int floor;
+    private double distance;
 
     public AccessPointLocation(String BSSID, String desc, int x, int y, int floor) {
         this.BSSID = BSSID;
@@ -13,14 +14,13 @@ public class AccessPointLocation {
         this.x = x;
         this.y = y;
         this.floor = floor;
+        this.distance = 0.0;
     }
+
+    public void setDistance(double distance) { this.distance = distance; }
 
     public String getBSSID() {
         return BSSID;
-    }
-
-    public String getDesc() {
-        return desc;
     }
 
     public int getX() {
@@ -31,7 +31,5 @@ public class AccessPointLocation {
         return y;
     }
 
-    public int getFloor() {
-        return floor;
-    }
+    public double getDistance() { return distance; }
 }
