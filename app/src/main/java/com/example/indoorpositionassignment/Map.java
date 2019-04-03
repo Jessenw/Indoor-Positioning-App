@@ -27,6 +27,10 @@ import java.util.List;
 
 public class Map extends Fragment {
 
+    //  Offset from origin of canvas to origin of map
+    final int OFFSET_X = 30;
+    final int OFFSET_Y = 60;
+
     private OnFragmentInteractionListener mListener;
 
     ArrayList<AccessPointLocation> floorOneAccessPoints = new ArrayList<>(
@@ -45,73 +49,14 @@ public class Map extends Fragment {
             )
     );
 
-    ArrayList<AccessPointLocation> floorTwoAccessPoints = new ArrayList<>(
-            Arrays.asList(
-                    new AccessPointLocation("70:b3:17:d5:34:40", "CO228", 18, 70, 2)
-            )
-    );
-
-    ArrayList<AccessPointLocation> floorThreeAccessPoints = new ArrayList<>(
-            Arrays.asList(
-                    new AccessPointLocation("70:b3:17:d5:34:40", "CO228", 18, 70, 2)
-            )
-    );
-
-    public Map() {
-        // Required empty public constructor
-    }
-
-    public static Map newInstance() {
-        Map fragment = new Map();
-        Bundle args = new Bundle();
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // return inflater.inflate(R.layout.fragment_map, container, false);
-        final MyView view = new MyView(getActivity());
-        // Update access point list every 100ms
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                // Make sure that this fragment is attached to the activity
-                if (isAdded() == true) { view.invalidate(); }
-                handler.postDelayed(this, 100);
-            }
-        }, 100);
-        return view;
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-    public interface OnFragmentInteractionListener {
-        void onFragmentInteraction(Uri uri);
-    }
-
+    /**
+     * This View class handles drawing:
+     *      - Floor plan
+     *      - Access Points
+     *      - Strongest Access Points
+     *      - Approximate distance to device
+     *      - Distance bounding box
+     */
     public class MyView extends View {
 
          Paint paint;
@@ -293,5 +238,63 @@ public class Map extends Fragment {
             double exp = (27.55 - (20 * Math.log10(freq)) + Math.abs(level)) / 20.0;
             return Math.pow(10.0, exp);
         }
+    }
+
+    // ----- FRAGMENT SETUP METHODS -----
+
+    public Map() {}
+
+    public static Map newInstance() {
+        Map fragment = new Map();
+        Bundle args = new Bundle();
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        final MyView view = new MyView(getActivity());
+
+        // Update access point list every 100ms
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                // Make sure that this fragment is attached to the activity
+                if (isAdded() == true) {
+                    view.invalidate();
+                }
+                handler.postDelayed(this, 100);
+            }
+        }, 100);
+
+        return view;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnFragmentInteractionListener) {
+            mListener = (OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
+
+    public interface OnFragmentInteractionListener {
+        void onFragmentInteraction(Uri uri);
     }
 }
