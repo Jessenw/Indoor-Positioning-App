@@ -27,27 +27,102 @@ import java.util.List;
 
 public class Map extends Fragment {
 
-    //  Offset from origin of canvas to origin of map
-    final int OFFSET_X = 30;
-    final int OFFSET_Y = 60;
+    // Floor plan width and height
+    final int FLOOR_TWO_WIDTH = 710;
+    final int FLOOR_TWO_HEIGHT = 437;
 
     private OnFragmentInteractionListener mListener;
 
+    /* AccessPointLocation Arrays
+            - X, Y coordinates are based on the origin of the floor plan
+            - Greater X value -> positive X axis on floor plan
+            - Greater Y value -> positive Y axis on floor plan
+     */
     ArrayList<AccessPointLocation> floorOneAccessPoints = new ArrayList<>(
             Arrays.asList(
-                    new AccessPointLocation("70:b3:17:d5:34:40", "CO228", 18, 70, 2),
-                    new AccessPointLocation("70:6d:15:28:83:4f", "CO236", 38, 47, 2),
-                    new AccessPointLocation("70:6d:15:40:a3:8f", "CO219", 40, 75, 2),
-                    new AccessPointLocation("70:6d:15:40:cd:2f", "CO246", 68, 21, 2), // "70:6d:15:40:cd:20"
-                    new AccessPointLocation("70:b3:17:d5:37:e0", "Outside CO228", 10, 76, 2),
-                    new AccessPointLocation("70:6d:15:40:56:0f", "Outside CO232", 10, 53, 2),
-                    new AccessPointLocation("70:6d:15:48:23:20", "Outside CO262", 10, 30, 2),
-                    new AccessPointLocation("70:6d:15:40:ca:a0", "Outside CO243", 57, 34, 2),
-                    new AccessPointLocation("70:6d:15:40:b5:c0", "Outside CO217", 47, 93, 2),
-                    new AccessPointLocation("70:6d:15:36:91:8f", "Outside CO258", 12, 11, 2), // 70:6d:15:36:91:80
-                    new AccessPointLocation("00:d7:8f:f3:95:8f", "Outside CO220", 18, 82, 2)  // 00:d7:8f:f3:95:80
+                    new AccessPointLocation("70:b3:17:d5:34:40", "CO228", 330, 80, 2),
+                    new AccessPointLocation("70:6d:15:28:83:4f", "CO236", 230, 185, 2),
+                    new AccessPointLocation("70:6d:15:40:a3:8f", "CO219", 315, 220, 2),
+                    new AccessPointLocation("70:6d:15:40:cd:2f", "CO246", 100, 325, 2),         // "70:6d:15:40:cd:20"
+                    new AccessPointLocation("70:b3:17:d5:37:e0", "Outside CO228", 365, 48, 2),
+                    new AccessPointLocation("70:6d:15:40:56:0f", "Outside CO232", 250, 45, 2),
+                    new AccessPointLocation("70:6d:15:48:23:20", "Outside CO262", 140, 48, 2),
+                    new AccessPointLocation("70:6d:15:40:ca:a0", "Outside CO243", 160, 272, 2),
+                    new AccessPointLocation("70:6d:15:40:b5:c0", "Outside CO217", 445, 225, 2),
+                    new AccessPointLocation("70:6d:15:36:91:8f", "Outside CO258", 50, 60, 2),   // 70:6d:15:36:91:80
+                    new AccessPointLocation("00:d7:8f:f3:95:8f", "Outside CO220", 400, 85, 2)   // 00:d7:8f:f3:95:80
             )
     );
+
+    private ArrayList<AccessPointLocation> getClosestAccessPoints() {
+        ArrayList<AccessPointLocation> strongestAccessPoints = new ArrayList<>();
+
+        WifiManager wifiManager = (WifiManager) getContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        wifiManager.startScan();
+        List<ScanResult> results = wifiManager.getScanResults();
+
+        // Filter data from scan results
+        ArrayList<AccessPoint> accessPointList = new ArrayList<>();
+        if (results != null) {
+            final int size = results.size();
+            if (size == 0) { /* "No results" handling goes here */ } else {
+                for (int i = 0; i < size; i++) {
+                    ScanResult result = results.get(i);
+                    if (result.SSID.contains("")) {
+                        double distance = calculateDistance(result.level, result.frequency);
+                        AccessPoint accessPoint = new AccessPoint(result.SSID, result.BSSID, result.level, distance, result.frequency);
+                        accessPointList.add(accessPoint);
+                    }
+                }
+
+                // Order results list based on closest distance
+                Collections.sort(accessPointList, new Comparator<AccessPoint>() {
+                    @Override
+                    public int compare(AccessPoint o1, AccessPoint o2) {
+                        double distance1 = o1.getDistance();
+                        double distance2 = o2.getDistance();
+
+                        if (distance1 > distance2) return 1;
+                        else if (distance1 < distance2) return -1;
+                        else return 0;
+                    }
+                });
+            }
+        }
+
+        // Get top 3 results
+        int count = 0;
+        if (accessPointList.size() >= 3) {
+            for (AccessPoint accessPoint: accessPointList) {
+                if (count < 3) {
+                    AccessPointLocation accessPointLocation = getAccessPointLocationByBSSID(accessPoint.getBSSID());
+                    if (accessPointLocation != null) {
+                        accessPointLocation.setDistance(calculateDistance(accessPoint.getLevel(), accessPoint.getFrequency()));
+                        strongestAccessPoints.add(accessPointLocation);
+                        count++;
+                    }
+                } else { return strongestAccessPoints; }
+            }
+        }
+
+        return null;
+    }
+
+    private AccessPointLocation getAccessPointLocationByBSSID(String BSSID) {
+        for (AccessPointLocation accessPointLocation: floorOneAccessPoints) {
+            String accessPointLocationBSSID = accessPointLocation.getBSSID();
+            if (accessPointLocationBSSID.equals(BSSID)) { return accessPointLocation; }
+        }
+
+        return null;
+    }
+
+    private double calculateDistance(double level, double freq) {
+        // https://stackoverflow.com/questions/11217674/how-to-calculate-distance-from-wifi-router-using-signal-strength
+        // http://rvmiller.com/2013/05/part-1-wifi-based-trilateration-on-android/
+        double exp = (27.55 - (20 * Math.log10(freq)) + Math.abs(level)) / 20.0;
+        return Math.pow(10.0, exp);
+    }
 
     /**
      * This View class handles drawing:
@@ -70,29 +145,33 @@ public class Map extends Fragment {
          protected void onDraw(Canvas canvas) {
              super.onDraw(canvas);
 
+             // TODO: Add logic to set floor plan height, width and offsets based on known level
+             int floorPlanWidth = FLOOR_TWO_WIDTH;
+             int floorPlanHeight = FLOOR_TWO_HEIGHT;
+
+             // Setup canvas for horizontal orientation
+             canvas.translate(getWidth(), 0);
+             canvas.rotate(90.0f);
+             canvas.scale(2, 2);
+
              // Draw floor-plan
              Bitmap floorPlan = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.cotton_level_2);
+             canvas.drawBitmap(floorPlan, null, new Rect(0, 0, floorPlanWidth, floorPlanHeight), null);
 
-             double scale = 2.1; // How much to scale floor plan by
-             int right = (int) (437 * scale);
-             int bottom = (int) (710 * scale);
-             // Rotate floor-plan
-             Matrix matrix = new Matrix();
-             matrix.postRotate(90.0f);
-             Bitmap rotatedFloorPlan = Bitmap.createBitmap(floorPlan, 0, 0, floorPlan.getWidth(), floorPlan.getHeight(), matrix, true);
-             // Add floor-plan to canvas
-             canvas.drawBitmap(rotatedFloorPlan, null, new Rect(0, 0, right, bottom), null);
+             // Move origin to origin of floor plan
+             canvas.translate(14, 408);
 
-             int offsetX = 60;
-             int offsetY = 30;
+             // Draw canvas origin
+             paint.setColor(Color.RED);
+             canvas.drawCircle(0, 0, 5, paint);
 
              // Draw access points on current floor
-             for (AccessPointLocation accessPointLocation: floorOneAccessPoints)
-                 drawAccessPoint(accessPointLocation.getX() * 10, accessPointLocation.getY() * 10, offsetX, offsetY, canvas);
+             for (AccessPointLocation accessPointLocation: floorOneAccessPoints) {
+                 drawAccessPoint(accessPointLocation.getX(), accessPointLocation.getY() * -1, accessPointLocation.getBSSID(), canvas);
+             }
 
              // Draw distance radius of closest access points
              ArrayList<AccessPointLocation> strongestAccessPoints = getClosestAccessPoints();
-
              if (strongestAccessPoints != null) {
                  int i = 0;
                  for (AccessPointLocation accessPointLocation : strongestAccessPoints) {
@@ -107,137 +186,56 @@ public class Map extends Fragment {
                              paint.setColor(Color.CYAN);
                              break;
                      }
-                     drawClosestAccessPoint(accessPointLocation, offsetX, offsetY, canvas);
+                     drawClosestAccessPoint(accessPointLocation, canvas);
                      i++;
                  }
-             }
 
-             // Draw bounding box of access points radius
-             if (strongestAccessPoints != null) {
+                 // Draw bounding box of access points radius
                  for (AccessPointLocation accessPointLocation : strongestAccessPoints) {
-                     drawBoundingBox(accessPointLocation, offsetX, offsetY, canvas);
+                     drawBoundingBox(accessPointLocation, canvas);
                  }
              }
          }
 
-         protected void drawBoundingBox(AccessPointLocation accessPointLocation, int offsetX, int offsetY, Canvas canvas) {
+        protected void drawAccessPoint(int x, int y, String BSSID, Canvas canvas) {
+            int cx = x;
+            int cy = y;
+            int radius = 8;
+            paint.setColor(Color.BLUE);
+            canvas.drawCircle(cx, cy, radius, paint);
+            paint.setColor(Color.RED);
+            canvas.drawText(BSSID, cx, cy + 20, paint);
+        }
+
+        protected void drawClosestAccessPoint(AccessPointLocation accessPointLocation, Canvas canvas) {
+            int cx = accessPointLocation.getX();
+            int cy = accessPointLocation.getY();
+
+            // Draw distance radius
+            float areaRadius = (float) accessPointLocation.getDistance();
+            paint.setAlpha(60);
+            canvas.drawCircle(cx, cy * -1, areaRadius, paint);
+
+            // Change access point location colour to red
+            float locationRadius = 8.0f;
+            paint.setColor(Color.RED);
+            paint.setAlpha(255);
+            canvas.drawCircle(cx, cy * -1, locationRadius, paint);
+        }
+
+         protected void drawBoundingBox(AccessPointLocation accessPointLocation, Canvas canvas) {
              Rect rect = new Rect();
-             rect.bottom = accessPointLocation.getY() * 10 + offsetY + (int) accessPointLocation.getDistance() * 5;
-             rect.left = accessPointLocation.getX() * 10 + offsetX - (int) accessPointLocation.getDistance() * 5;
-             rect.right = accessPointLocation.getX() * 10 + offsetX + (int) accessPointLocation.getDistance() * 5;
-             rect.top = accessPointLocation.getY() * 10 + offsetY - (int) accessPointLocation.getDistance() * 5;
+             rect.left = accessPointLocation.getX() - (int) accessPointLocation.getDistance();
+             rect.right = accessPointLocation.getX() + (int) accessPointLocation.getDistance();
+             rect.bottom = accessPointLocation.getY() * -1 + (int) accessPointLocation.getDistance();
+             rect.top = accessPointLocation.getY() * -1 - (int) accessPointLocation.getDistance();
 
              paint.setStyle(Paint.Style.STROKE);
              paint.setStrokeWidth(2.0f);
              paint.setColor(Color.rgb(255, 165, 0));
              canvas.drawRect(rect, paint);
              paint.setStyle(Paint.Style.FILL);
-
          }
-
-         protected void drawAccessPoint(int x, int y, int offsetX, int offsetY, Canvas canvas) {
-             int cx = x + offsetX;
-             int cy = y + offsetY;
-             int radius = 10;
-             paint.setColor(Color.BLUE);
-             canvas.drawCircle(cx, cy, radius, paint);
-         }
-
-         protected void drawClosestAccessPoint(AccessPointLocation accessPointLocation, int offsetX,
-                                               int offsetY, Canvas canvas) {
-             int cx = accessPointLocation.getX() * 10 + offsetX;
-             int cy = accessPointLocation.getY() * 10 + offsetY;
-
-             // Draw distance radius
-             float areaRadius = (float) accessPointLocation.getDistance() * 5;
-             paint.setAlpha(60);
-             canvas.drawCircle(cx, cy, areaRadius, paint);
-
-             // Change access point location color to red
-             float locationRadius = 10.0f;
-             paint.setColor(Color.RED);
-             paint.setAlpha(255);
-             canvas.drawCircle(cx, cy, locationRadius, paint);
-         }
-
-         protected ArrayList<AccessPointLocation> getClosestAccessPoints() {
-             ArrayList<AccessPointLocation> strongestAccessPoints = new ArrayList<>();
-
-             WifiManager wifiManager = (WifiManager) getContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-             wifiManager.startScan();
-             List<ScanResult> results = wifiManager.getScanResults();
-
-             // Filter data from scan results
-             ArrayList<AccessPoint> accessPointList = new ArrayList<>();
-             if (results != null) {
-                 final int size = results.size();
-                 if (size == 0) { /* "No results" handling goes here */ } else {
-                     for (int i = 0; i < size; i++) {
-                         ScanResult result = results.get(i);
-                         if (result.SSID.contains("")) {
-                             double distance = calculateDistance(result.level, result.frequency);
-                             AccessPoint accessPoint = new AccessPoint(result.SSID, result.BSSID, result.level, distance, result.frequency);
-                             accessPointList.add(accessPoint);
-                         }
-                     }
-
-                     // Order results list based on closest distance
-                     Collections.sort(accessPointList, new Comparator<AccessPoint>() {
-                         @Override
-                         public int compare(AccessPoint o1, AccessPoint o2) {
-                             double distance1 = o1.getDistance();
-                             double distance2 = o2.getDistance();
-
-                             if (distance1 > distance2) return 1;
-                             else if (distance1 < distance2) return -1;
-                             else return 0;
-                         }
-                     });
-                 }
-             }
-
-
-             // Get top 3 results
-             // We only want to consider relevant Access Points in the network
-             int count = 0;
-             if (accessPointList.size() >= 3) {
-                 for (AccessPoint accessPoint: accessPointList) {
-                     if (count < 3) {
-                         AccessPointLocation accessPointLocation = getAccessPointByBSSID(accessPoint.getBSSID());
-                         if (accessPointLocation != null) {
-                             accessPointLocation.setDistance(calculateDistance(accessPoint.getLevel(), accessPoint.getFrequency()));
-                             strongestAccessPoints.add(accessPointLocation);
-                             count++;
-                         } else {
-                             // System.out.println("No Access Point with BSSID: [" + accessPoint.getBSSID() + "] found");
-                         }
-                     } else {
-                         System.out.println(strongestAccessPoints.toString());
-                         return strongestAccessPoints;
-                     }
-                 }
-             }
-
-             return null;
-         }
-
-         protected AccessPointLocation getAccessPointByBSSID(String BSSID) {
-             for (AccessPointLocation accessPointLocation: floorOneAccessPoints) {
-                 String accessPointLocationBSSID = accessPointLocation.getBSSID();
-                 if (accessPointLocationBSSID.equals(BSSID)) {
-                     return accessPointLocation;
-                 }
-             }
-
-             return null;
-         }
-
-        public double calculateDistance(double level, double freq) {
-            // https://stackoverflow.com/questions/11217674/how-to-calculate-distance-from-wifi-router-using-signal-strength
-            // http://rvmiller.com/2013/05/part-1-wifi-based-trilateration-on-android/
-            double exp = (27.55 - (20 * Math.log10(freq)) + Math.abs(level)) / 20.0;
-            return Math.pow(10.0, exp);
-        }
     }
 
     // ----- FRAGMENT SETUP METHODS -----
