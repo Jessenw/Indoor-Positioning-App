@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.net.Uri;
@@ -23,6 +22,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import com.lemmingapex.trilateration.NonLinearLeastSquaresSolver;
+import com.lemmingapex.trilateration.LinearLeastSquaresSolver;
+import com.lemmingapex.trilateration.TrilaterationFunction;
+
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
+import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
 
 
 public class Map extends Fragment {
@@ -58,6 +64,7 @@ public class Map extends Fragment {
         ArrayList<AccessPointLocation> strongestAccessPoints = new ArrayList<>();
 
         WifiManager wifiManager = (WifiManager) getContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        if (wifiManager == null) { throw new Error("WifiManager null"); }
         wifiManager.startScan();
         List<ScanResult> results = wifiManager.getScanResults();
 
@@ -65,7 +72,7 @@ public class Map extends Fragment {
         ArrayList<AccessPoint> accessPointList = new ArrayList<>();
         if (results != null) {
             final int size = results.size();
-            if (size == 0) { /* "No results" handling goes here */ } else {
+            if (size > 0) {
                 for (int i = 0; i < size; i++) {
                     ScanResult result = results.get(i);
                     if (result.SSID.contains("")) {
@@ -81,10 +88,7 @@ public class Map extends Fragment {
                     public int compare(AccessPoint o1, AccessPoint o2) {
                         double distance1 = o1.getDistance();
                         double distance2 = o2.getDistance();
-
-                        if (distance1 > distance2) return 1;
-                        else if (distance1 < distance2) return -1;
-                        else return 0;
+                        return Double.compare(distance1, distance2);
                     }
                 });
             }
@@ -105,7 +109,7 @@ public class Map extends Fragment {
             }
         }
 
-        return null;
+        return strongestAccessPoints;
     }
 
     private AccessPointLocation getAccessPointLocationByBSSID(String BSSID) {
@@ -122,6 +126,35 @@ public class Map extends Fragment {
         // http://rvmiller.com/2013/05/part-1-wifi-based-trilateration-on-android/
         double exp = (27.55 - (20 * Math.log10(freq)) + Math.abs(level)) / 20.0;
         return Math.pow(10.0, exp);
+    }
+
+    private double[] getLocation() {
+        ArrayList<AccessPointLocation> closestPoints = getClosestAccessPoints();
+
+        double[][] positions = new double[closestPoints.size()][2];
+        double[] distances = new double[closestPoints.size()];
+
+        // 20m = 148
+        // 10m = 74
+        // 1m = 7.4
+        // 2m =
+
+        // Convert coordinates into meters
+        for (int i = 0; i < closestPoints.size(); i++) {
+            AccessPointLocation accessPointLocation = closestPoints.get(i);
+            // Coordinates have to be converted into meters
+            positions[i][0] = accessPointLocation.getX() / 7.4;
+            positions[i][1] = accessPointLocation.getY() / 7.4;
+            distances[i] = accessPointLocation.getDistance();
+            int f = 0;
+        }
+
+        NonLinearLeastSquaresSolver solver = new NonLinearLeastSquaresSolver(new TrilaterationFunction(positions, distances), new LevenbergMarquardtOptimizer());
+        LeastSquaresOptimizer.Optimum optimum = solver.solve();
+
+        double[] calculatedPosition = optimum.getPoint().toArray();
+        System.out.println(calculatedPosition[0] + ", " + calculatedPosition[1]);
+        return calculatedPosition;
     }
 
     /**
@@ -165,6 +198,16 @@ public class Map extends Fragment {
              paint.setColor(Color.RED);
              canvas.drawCircle(0, 0, 5, paint);
 
+             // Draw scale points
+             paint.setColor(Color.RED);
+             canvas.drawCircle(509, 18, 5, paint);
+             canvas.drawCircle(657, 18, 5, paint);
+
+             // 20m = 148
+             // 10m = 74
+             // 1m = 7.4
+             // 2m =
+
              // Draw access points on current floor
              for (AccessPointLocation accessPointLocation: floorOneAccessPoints) {
                  drawAccessPoint(accessPointLocation.getX(), accessPointLocation.getY() * -1, accessPointLocation.getBSSID(), canvas);
@@ -195,6 +238,8 @@ public class Map extends Fragment {
                      drawBoundingBox(accessPointLocation, canvas);
                  }
              }
+
+             drawLocation(getLocation(), canvas);
          }
 
         protected void drawAccessPoint(int x, int y, String BSSID, Canvas canvas) {
@@ -236,6 +281,16 @@ public class Map extends Fragment {
              canvas.drawRect(rect, paint);
              paint.setStyle(Paint.Style.FILL);
          }
+
+         protected void drawLocation(double[] coordinates, Canvas canvas) {
+             float locationRadius = 8.0f;
+             paint.setColor(Color.GREEN);
+             paint.setAlpha(255);
+             float cx = ((float) coordinates[0]) * 7.4f;
+             float cy = ((float) coordinates[1]) * 7.4f;
+             canvas.drawCircle(cx, cy * -1, locationRadius, paint);
+             canvas.drawCircle(0, 0, locationRadius, paint);
+         }
     }
 
     // ----- FRAGMENT SETUP METHODS -----
@@ -265,7 +320,7 @@ public class Map extends Fragment {
             @Override
             public void run() {
                 // Make sure that this fragment is attached to the activity
-                if (isAdded() == true) {
+                if (isAdded()) {
                     view.invalidate();
                 }
                 handler.postDelayed(this, 100);
