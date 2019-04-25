@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,6 +47,23 @@ public class Map extends Fragment {
      */
     ArrayList<AccessPointLocation> floorOneAccessPoints = new ArrayList<>(
             Arrays.asList(
+                    new AccessPointLocation("70:80:8b:d3:5e:60", "", 0, 0, 0),
+                    new AccessPointLocation("70:70:8b:be:01:af", "", 0, 0, 0),
+                    new AccessPointLocation("70:70:8b:d3:5b:6f", "", 0, 0, 0),
+                    new AccessPointLocation("70:70:8b:ce:29:40", "", 0, 0, 0),
+                    new AccessPointLocation("00:2c:c8:cc:30:80", "", 0, 0, 0),
+                    new AccessPointLocation("70:70:8b:be:0c:80", "", 0, 0, 0),
+                    new AccessPointLocation("54:a2:74:d2:34:70", "", 0, 0, 0),
+                    new AccessPointLocation("e8:65:49:40:0c:10", "", 0, 0, 0),
+                    new AccessPointLocation("b0:8b:cf:27:7b:cf", "", 0, 0, 0),
+                    new AccessPointLocation("bc:26:c7:40:c0:00", "", 0, 0, 0),
+                    new AccessPointLocation("b0:8b:cf:35:2f:cf", "", 0, 0, 0),
+                    new AccessPointLocation("00:a2:ee:d3:80:af", "", 0, 0, 0)
+            )
+    );
+
+    ArrayList<AccessPointLocation> floorTwoAccessPoints = new ArrayList<>(
+            Arrays.asList(
                     new AccessPointLocation("70:b3:17:d5:34:40", "CO228", 330, 80, 2),
                     new AccessPointLocation("70:6d:15:28:83:4f", "CO236", 230, 185, 2),
                     new AccessPointLocation("70:6d:15:40:a3:8f", "CO219", 315, 220, 2),
@@ -57,6 +75,28 @@ public class Map extends Fragment {
                     new AccessPointLocation("70:6d:15:40:b5:c0", "Outside CO217", 445, 225, 2),
                     new AccessPointLocation("70:6d:15:36:91:8f", "Outside CO258", 50, 60, 2),   // 70:6d:15:36:91:80
                     new AccessPointLocation("00:d7:8f:f3:95:8f", "Outside CO220", 400, 85, 2)   // 00:d7:8f:f3:95:80
+            )
+    );
+
+    ArrayList<AccessPointLocation> floorThreeAccessPoints = new ArrayList<>(
+            Arrays.asList(
+                   new AccessPointLocation("70:6d:15:36:b6:2f", "School of Mathematics Office", 0, 0, 0),
+                   new AccessPointLocation("bc:26:c7:94:91:40", "Outside CO365", 0, 0, 0),
+                   new AccessPointLocation("70:6d:15:3b:a2:6f", "Outside CO318", 0, 0, 0),
+                   new AccessPointLocation("e8:65:49:16:00:df", "School of Geology Office", 0, 0, 0),
+                   new AccessPointLocation("70:6d:15:05:be:40", "Outside CO305", 0, 0, 0),
+                   new AccessPointLocation("70:6d:15:16:6c:20", "Outside CO329", 0, 0, 0),
+                   new AccessPointLocation("70:6d:15:40:35:cf", "Outside CO353", 0, 0, 0),
+                   new AccessPointLocation("70:6d:15:48:15:2f", "Outside CO338", 0,0, 0)
+            )
+    );
+
+    ArrayList<AccessPointLocation> floorFourAccessPoints = new ArrayList<>(
+            Arrays.asList(
+                    new AccessPointLocation("70:6d:15:40:cd:60", "", 0, 0, 0),
+                    new AccessPointLocation("70:6d:15:35:32:e0", "", 0, 0, 0),
+                    new AccessPointLocation("70:6d:15:35:42:00", "", 0, 0, 0),
+                    new AccessPointLocation("70:6d:15:40:c9:4e", "", 0, 0, 0)
             )
     );
 
@@ -113,7 +153,7 @@ public class Map extends Fragment {
     }
 
     private AccessPointLocation getAccessPointLocationByBSSID(String BSSID) {
-        for (AccessPointLocation accessPointLocation: floorOneAccessPoints) {
+        for (AccessPointLocation accessPointLocation: floorTwoAccessPoints) {
             String accessPointLocationBSSID = accessPointLocation.getBSSID();
             if (accessPointLocationBSSID.equals(BSSID)) { return accessPointLocation; }
         }
@@ -149,12 +189,17 @@ public class Map extends Fragment {
             int f = 0;
         }
 
-        NonLinearLeastSquaresSolver solver = new NonLinearLeastSquaresSolver(new TrilaterationFunction(positions, distances), new LevenbergMarquardtOptimizer());
-        LeastSquaresOptimizer.Optimum optimum = solver.solve();
+        try {
+            NonLinearLeastSquaresSolver solver = new NonLinearLeastSquaresSolver(new TrilaterationFunction(positions, distances), new LevenbergMarquardtOptimizer());
+            LeastSquaresOptimizer.Optimum optimum = solver.solve();
 
-        double[] calculatedPosition = optimum.getPoint().toArray();
-        System.out.println(calculatedPosition[0] + ", " + calculatedPosition[1]);
-        return calculatedPosition;
+            double[] calculatedPosition = optimum.getPoint().toArray();
+            System.out.println(calculatedPosition[0] + ", " + calculatedPosition[1]);
+            return calculatedPosition;
+        } catch (IllegalArgumentException e) {
+
+        }
+        return null;
     }
 
     /**
@@ -200,16 +245,13 @@ public class Map extends Fragment {
 
              // Draw scale points
              paint.setColor(Color.RED);
-             canvas.drawCircle(509, 18, 5, paint);
-             canvas.drawCircle(657, 18, 5, paint);
+             canvas.drawCircle(509, 18, 2, paint);
+             canvas.drawCircle(657, 18, 2, paint);
 
-             // 20m = 148
-             // 10m = 74
              // 1m = 7.4
-             // 2m =
 
              // Draw access points on current floor
-             for (AccessPointLocation accessPointLocation: floorOneAccessPoints) {
+             for (AccessPointLocation accessPointLocation: floorTwoAccessPoints) {
                  drawAccessPoint(accessPointLocation.getX(), accessPointLocation.getY() * -1, accessPointLocation.getBSSID(), canvas);
              }
 
@@ -239,7 +281,9 @@ public class Map extends Fragment {
                  }
              }
 
-             drawLocation(getLocation(), canvas);
+             if (getLocation() != null) {
+                 drawLocation(getLocation(), canvas);
+             }
          }
 
         protected void drawAccessPoint(int x, int y, String BSSID, Canvas canvas) {
