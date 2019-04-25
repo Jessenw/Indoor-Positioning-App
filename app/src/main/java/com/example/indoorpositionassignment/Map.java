@@ -38,6 +38,8 @@ public class Map extends Fragment {
     final int FLOOR_TWO_WIDTH = 710;
     final int FLOOR_TWO_HEIGHT = 437;
 
+    int currentFloor = 2;
+
     private OnFragmentInteractionListener mListener;
 
     /* AccessPointLocation Arrays
@@ -64,17 +66,17 @@ public class Map extends Fragment {
 
     ArrayList<AccessPointLocation> floorTwoAccessPoints = new ArrayList<>(
             Arrays.asList(
-                    new AccessPointLocation("70:b3:17:d5:34:40", "CO228", 330, 80, 2),
-                    new AccessPointLocation("70:6d:15:28:83:4f", "CO236", 230, 185, 2),
-                    new AccessPointLocation("70:6d:15:40:a3:8f", "CO219", 315, 220, 2),
-                    new AccessPointLocation("70:6d:15:40:cd:2f", "CO246", 100, 325, 2),         // "70:6d:15:40:cd:20"
-                    new AccessPointLocation("70:b3:17:d5:37:e0", "Outside CO228", 365, 48, 2),
-                    new AccessPointLocation("70:6d:15:40:56:0f", "Outside CO232", 250, 45, 2),
-                    new AccessPointLocation("70:6d:15:48:23:20", "Outside CO262", 140, 48, 2),
-                    new AccessPointLocation("70:6d:15:40:ca:a0", "Outside CO243", 160, 272, 2),
-                    new AccessPointLocation("70:6d:15:40:b5:c0", "Outside CO217", 445, 225, 2),
-                    new AccessPointLocation("70:6d:15:36:91:8f", "Outside CO258", 50, 60, 2),   // 70:6d:15:36:91:80
-                    new AccessPointLocation("00:d7:8f:f3:95:8f", "Outside CO220", 400, 85, 2)   // 00:d7:8f:f3:95:80
+                    new AccessPointLocation("70:b3:17:d5:34:40", "CO228", 44.6, 10.81, 2),
+                    new AccessPointLocation("70:6d:15:28:83:4f", "CO236", 31.1, 25, 2),
+                    new AccessPointLocation("70:6d:15:40:a3:8f", "CO219", 42.56, 29.73, 2),
+                    new AccessPointLocation("70:6d:15:40:cd:2f", "CO246", 13.51, 43.91, 2),         // "70:6d:15:40:cd:20"
+                    new AccessPointLocation("70:b3:17:d5:37:e0", "Outside CO228", 49.32, 6.48, 2),
+                    new AccessPointLocation("70:6d:15:40:56:0f", "Outside CO232", 33.78, 6.08, 2),
+                    new AccessPointLocation("70:6d:15:48:23:20", "Outside CO262", 18.91, 6.48, 2),
+                    new AccessPointLocation("70:6d:15:40:ca:a0", "Outside CO243", 21.62, 36.75, 2),
+                    new AccessPointLocation("70:6d:15:40:b5:c0", "Outside CO217", 60.13, 30.40, 2),
+                    new AccessPointLocation("70:6d:15:36:91:8f", "Outside CO258", 6.75, 8.10, 2),   // 70:6d:15:36:91:80
+                    new AccessPointLocation("00:d7:8f:f3:95:8f", "Outside CO220", 54.05, 11.48, 2)   // 00:d7:8f:f3:95:80
             )
     );
 
@@ -239,20 +241,9 @@ public class Map extends Fragment {
              // Move origin to origin of floor plan
              canvas.translate(14, 408);
 
-             // Draw canvas origin
-             paint.setColor(Color.RED);
-             canvas.drawCircle(0, 0, 5, paint);
-
-             // Draw scale points
-             paint.setColor(Color.RED);
-             canvas.drawCircle(509, 18, 2, paint);
-             canvas.drawCircle(657, 18, 2, paint);
-
-             // 1m = 7.4
-
              // Draw access points on current floor
              for (AccessPointLocation accessPointLocation: floorTwoAccessPoints) {
-                 drawAccessPoint(accessPointLocation.getX(), accessPointLocation.getY() * -1, accessPointLocation.getBSSID(), canvas);
+                 drawAccessPoint(accessPointLocation.getCanvasX(), accessPointLocation.getCanvasY() * -1, accessPointLocation.getBSSID(), canvas);
              }
 
              // Draw distance radius of closest access points
@@ -297,11 +288,11 @@ public class Map extends Fragment {
         }
 
         protected void drawClosestAccessPoint(AccessPointLocation accessPointLocation, Canvas canvas) {
-            int cx = accessPointLocation.getX();
-            int cy = accessPointLocation.getY();
+            int cx = accessPointLocation.getCanvasX();
+            int cy = accessPointLocation.getCanvasY();
 
             // Draw distance radius
-            float areaRadius = (float) accessPointLocation.getDistance();
+            float areaRadius = (float) accessPointLocation.getCanvasDistance();
             paint.setAlpha(60);
             canvas.drawCircle(cx, cy * -1, areaRadius, paint);
 
@@ -314,10 +305,10 @@ public class Map extends Fragment {
 
          protected void drawBoundingBox(AccessPointLocation accessPointLocation, Canvas canvas) {
              Rect rect = new Rect();
-             rect.left = accessPointLocation.getX() - (int) accessPointLocation.getDistance();
-             rect.right = accessPointLocation.getX() + (int) accessPointLocation.getDistance();
-             rect.bottom = accessPointLocation.getY() * -1 + (int) accessPointLocation.getDistance();
-             rect.top = accessPointLocation.getY() * -1 - (int) accessPointLocation.getDistance();
+             rect.left = accessPointLocation.getCanvasX() - (int) accessPointLocation.getCanvasDistance();
+             rect.right = accessPointLocation.getCanvasX() + (int) accessPointLocation.getCanvasDistance();
+             rect.bottom = accessPointLocation.getCanvasY() * -1 + (int) accessPointLocation.getCanvasDistance();
+             rect.top = accessPointLocation.getCanvasY() * -1 - (int) accessPointLocation.getCanvasDistance();
 
              paint.setStyle(Paint.Style.STROKE);
              paint.setStrokeWidth(2.0f);
