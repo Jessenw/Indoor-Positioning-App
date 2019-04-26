@@ -14,10 +14,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -213,15 +215,42 @@ public class Map extends Fragment {
      *      - Distance bounding box
      */
     public class MyView extends View {
+        Paint paint;
+        Context context;
+        Canvas myCanvas;
 
-         Paint paint;
+        // Floor button bounding boxes
+        Rect[] floorButtonRect = new Rect[]{
+                new Rect(0, 40, 180, 100),
+                new Rect(190 , 40, 370, 100),
+                new Rect(380 , 40, 560, 100),
+                new Rect(570, 40, 750, 100)
+        };
 
-         public MyView(Context context) {
-             super(context);
-             paint = new Paint();
-         }
+        public MyView(Context context) {
+            super(context);
+            paint = new Paint();
+            this.context = context;
+        }
 
-         @Override
+        @Override
+        public boolean dispatchTouchEvent(MotionEvent event) {
+            int touchX = (int) (event.getX() / 2);
+            int touchY = (int) (event.getY() / 2);
+            if (floorButtonRect[0].contains(touchY, touchX)) {
+                currentFloor = 1;
+            } else if (floorButtonRect[1].contains(touchY, touchX)) {
+                currentFloor = 2;
+            } else if (floorButtonRect[2].contains(touchY, touchX)) {
+                currentFloor = 3;
+            } else if (floorButtonRect[3].contains(touchY, touchX)) {
+                currentFloor = 4;
+            }
+            System.out.println("Current floor: " + currentFloor);
+            return true;
+        }
+
+        @Override
          protected void onDraw(Canvas canvas) {
              super.onDraw(canvas);
 
@@ -275,6 +304,24 @@ public class Map extends Fragment {
              if (getLocation() != null) {
                  drawLocation(getLocation(), canvas);
              }
+
+             // Draw floor button
+             paint.setColor(Color.BLUE);
+             for (int i = 0; i < floorButtonRect.length; i++) {
+                 if (currentFloor - 1 == i) {
+                     paint.setColor(Color.GREEN);
+                 }
+                 canvas.drawRect(floorButtonRect[i], paint);
+                 paint.setColor(Color.BLUE);
+             }
+
+
+
+
+//             paint.setColor(Color.WHITE);
+//             canvas.drawText("Floor One", 0, 50, paint);
+
+             myCanvas = canvas;
          }
 
         protected void drawAccessPoint(int x, int y, String BSSID, Canvas canvas) {
@@ -361,6 +408,16 @@ public class Map extends Fragment {
                 handler.postDelayed(this, 100);
             }
         }, 100);
+
+        // Setup floor select drop down
+//        View view2 = inflater.inflate(R.layout.fragment_map, container, false);
+//        Spinner dropdown = view2.findViewById(R.id.floorselect);
+//        String[] dropdownItems = new String[]{
+//                "Floor 1", "Floor 2", "Floor 3", "Floor 4"
+//        };
+//        ArrayAdapter<String> dropdownAdapter = new ArrayAdapter<>(
+//                view.getContext(), android.R.layout.simple_spinner_dropdown_item, dropdownItems);
+//        dropdown.setAdapter(dropdownAdapter);
 
         return view;
     }

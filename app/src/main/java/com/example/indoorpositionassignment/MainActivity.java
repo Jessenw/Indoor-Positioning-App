@@ -15,30 +15,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity implements AccessPoints.OnFragmentInteractionListener, Map.OnFragmentInteractionListener {
 
     int MY_PERMISSION_FINE_LOCATION = 0;
 
     WifiManager wifiManager;
-
-    ArrayList<AccessPointLocation> floorOneAccessPoints = new ArrayList<>(
-            Arrays.asList(
-                    new AccessPointLocation("70:b3:17:d5:34:40", "CO228", 0, 0, 2),
-                    new AccessPointLocation("70:6d:15:28:83:4f", "CO236", 0, 0, 2),
-                    new AccessPointLocation("70:6d:15:40:a3:8f", "CO219", 0, 0, 2),
-                    new AccessPointLocation("70:6d:15:40:cd:2f", "CO246", 0, 0, 2), // "70:6d:15:40:cd:20"
-                    new AccessPointLocation("70:b3:17:d5:37:e0", "Outside CO228", 0, 0, 2),
-                    new AccessPointLocation("70:6d:15:40:56:0f", "Outside CO232", 0, 0, 2),
-                    new AccessPointLocation("70:6d:15:48:23:20", "Outside CO262", 0, 0, 2),
-                    new AccessPointLocation("70:6d:15:40:ca:a0", "Outside CO243", 0, 0, 2),
-                    new AccessPointLocation("70:6d:15:40:b5:c0", "Outside CO217", 0, 0, 2),
-                    new AccessPointLocation("70:6d:15:36:91:8f", "Outside CO258", 0, 0, 2), // 70:6d:15:36:91:80
-                    new AccessPointLocation("00:d7:8f:f3:95:8f", "Outside CO220", 0, 0, 2)  // 00:d7:8f:f3:95:80
-            )
-    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,14 +71,9 @@ public class MainActivity extends AppCompatActivity implements AccessPoints.OnFr
 
     @Override
     public void onFragmentInteraction(Uri uri) {
-
     }
 
     public WifiManager getWifiManager() {
         return wifiManager;
-    }
-
-    public ArrayList<AccessPointLocation> getFloorOneAccessPoints() {
-        return floorOneAccessPoints;
     }
 }
