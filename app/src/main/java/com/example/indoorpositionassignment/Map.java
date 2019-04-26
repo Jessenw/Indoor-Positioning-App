@@ -17,8 +17,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.Spinner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,7 +25,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.lemmingapex.trilateration.NonLinearLeastSquaresSolver;
-import com.lemmingapex.trilateration.LinearLeastSquaresSolver;
 import com.lemmingapex.trilateration.TrilaterationFunction;
 
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
@@ -40,7 +37,7 @@ public class Map extends Fragment {
     final int FLOOR_TWO_WIDTH = 710;
     final int FLOOR_TWO_HEIGHT = 437;
 
-    int currentFloor = 2;
+    int currentFloor = 1;
 
     private OnFragmentInteractionListener mListener;
 
@@ -51,18 +48,18 @@ public class Map extends Fragment {
      */
     ArrayList<AccessPointLocation> floorOneAccessPoints = new ArrayList<>(
             Arrays.asList(
-                    new AccessPointLocation("70:80:8b:d3:5e:60", "", 0, 0, 0),
-                    new AccessPointLocation("70:70:8b:be:01:af", "", 0, 0, 0),
-                    new AccessPointLocation("70:70:8b:d3:5b:6f", "", 0, 0, 0),
-                    new AccessPointLocation("70:70:8b:ce:29:40", "", 0, 0, 0),
-                    new AccessPointLocation("00:2c:c8:cc:30:80", "", 0, 0, 0),
-                    new AccessPointLocation("70:70:8b:be:0c:80", "", 0, 0, 0),
-                    new AccessPointLocation("54:a2:74:d2:34:70", "", 0, 0, 0),
-                    new AccessPointLocation("e8:65:49:40:0c:10", "", 0, 0, 0),
-                    new AccessPointLocation("b0:8b:cf:27:7b:cf", "", 0, 0, 0),
-                    new AccessPointLocation("bc:26:c7:40:c0:00", "", 0, 0, 0),
-                    new AccessPointLocation("b0:8b:cf:35:2f:cf", "", 0, 0, 0),
-                    new AccessPointLocation("00:a2:ee:d3:80:af", "", 0, 0, 0)
+                    new AccessPointLocation("70:80:8b:d3:5e:60", "", 30, 50, 1),
+                    new AccessPointLocation("70:70:8b:be:01:af", "", 0, 0, 1),
+                    new AccessPointLocation("70:70:8b:d3:5b:6f", "", 0, 0, 1),
+                    new AccessPointLocation("70:70:8b:ce:29:40", "", 0, 0, 1),
+                    new AccessPointLocation("00:2c:c8:cc:30:80", "", 0, 0, 1),
+                    new AccessPointLocation("70:70:8b:be:0c:80", "", 0, 0, 1),
+                    new AccessPointLocation("54:a2:74:d2:34:70", "", 0, 0, 1),
+                    new AccessPointLocation("e8:65:49:40:0c:10", "", 0, 0, 1),
+                    new AccessPointLocation("b0:8b:cf:27:7b:cf", "", 0, 0, 1),
+                    new AccessPointLocation("bc:26:c7:40:c0:00", "", 0, 0, 1),
+                    new AccessPointLocation("b0:8b:cf:35:2f:cf", "", 0, 0, 1),
+                    new AccessPointLocation("00:a2:ee:d3:80:af", "", 0, 0, 1)
             )
     );
 
@@ -103,6 +100,64 @@ public class Map extends Fragment {
                     new AccessPointLocation("70:6d:15:40:c9:4e", "", 0, 0, 0)
             )
     );
+
+    // ----- FRAGMENT SETUP METHODS -----
+
+    public Map() {}
+
+    public static Map newInstance() {
+        Map fragment = new Map();
+        Bundle args = new Bundle();
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        final MyView view = new MyView(getActivity());
+
+        // Update access point list every 100ms
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                // Make sure that this fragment is attached to the activity
+                if (isAdded()) {
+                    view.invalidate();
+                }
+                handler.postDelayed(this, 100);
+            }
+        }, 100);
+
+        return view;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnFragmentInteractionListener) {
+            mListener = (OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
+
+    public interface OnFragmentInteractionListener {
+        void onFragmentInteraction(Uri uri);
+    }
 
     private ArrayList<AccessPointLocation> getClosestAccessPoints() {
         ArrayList<AccessPointLocation> strongestAccessPoints = new ArrayList<>();
@@ -157,7 +212,17 @@ public class Map extends Fragment {
     }
 
     private AccessPointLocation getAccessPointLocationByBSSID(String BSSID) {
-        for (AccessPointLocation accessPointLocation: floorTwoAccessPoints) {
+        ArrayList<AccessPointLocation> current = floorOneAccessPoints;
+        if (currentFloor == 1) {
+            current = floorOneAccessPoints;
+        } else if (currentFloor == 2) {
+            current = floorTwoAccessPoints;
+        } else if (currentFloor == 3) {
+            current = floorThreeAccessPoints;
+        } else if (currentFloor == 4) {
+            current = floorFourAccessPoints;
+        }
+        for (AccessPointLocation accessPointLocation: current) {
             String accessPointLocationBSSID = accessPointLocation.getBSSID();
             if (accessPointLocationBSSID.equals(BSSID)) { return accessPointLocation; }
         }
@@ -177,11 +242,6 @@ public class Map extends Fragment {
 
         double[][] positions = new double[closestPoints.size()][2];
         double[] distances = new double[closestPoints.size()];
-
-        // 20m = 148
-        // 10m = 74
-        // 1m = 7.4
-        // 2m =
 
         // Convert coordinates into meters
         for (int i = 0; i < closestPoints.size(); i++) {
@@ -246,7 +306,6 @@ public class Map extends Fragment {
             } else if (floorButtonRect[3].contains(touchY, touchX)) {
                 currentFloor = 4;
             }
-            System.out.println("Current floor: " + currentFloor);
             return true;
         }
 
@@ -254,7 +313,6 @@ public class Map extends Fragment {
          protected void onDraw(Canvas canvas) {
              super.onDraw(canvas);
 
-             // TODO: Add logic to set floor plan height, width and offsets based on known level
              int floorPlanWidth = FLOOR_TWO_WIDTH;
              int floorPlanHeight = FLOOR_TWO_HEIGHT;
 
@@ -263,15 +321,35 @@ public class Map extends Fragment {
              canvas.rotate(90.0f);
              canvas.scale(2, 2);
 
-             // Draw floor-plan
-             Bitmap floorPlan = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.cotton_level_2);
+            // Draw floor-plan
+             Bitmap floorPlan = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.cotton_level_1);
+             if (currentFloor == 1) {
+                 floorPlan = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.cotton_level_1);
+             } else if (currentFloor == 2) {
+                 floorPlan = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.cotton_level_2);
+             } else if (currentFloor == 3) {
+                 floorPlan = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.cotton_level_3);
+             } else if (currentFloor == 4) {
+                 floorPlan = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.cotton_level_4);
+             }
              canvas.drawBitmap(floorPlan, null, new Rect(0, 0, floorPlanWidth, floorPlanHeight), null);
 
              // Move origin to origin of floor plan
              canvas.translate(14, 408);
+             canvas.drawCircle(0,0, 10, paint);
 
              // Draw access points on current floor
-             for (AccessPointLocation accessPointLocation: floorTwoAccessPoints) {
+            ArrayList<AccessPointLocation> current = floorOneAccessPoints;
+            if (currentFloor == 1) {
+                current = floorOneAccessPoints;
+            } else if (currentFloor == 2) {
+                current = floorTwoAccessPoints;
+            } else if (currentFloor == 3) {
+                current = floorThreeAccessPoints;
+            } else if (currentFloor == 4) {
+                current = floorFourAccessPoints;
+            }
+             for (AccessPointLocation accessPointLocation: current) {
                  drawAccessPoint(accessPointLocation.getCanvasX(), accessPointLocation.getCanvasY() * -1, accessPointLocation.getBSSID(), canvas);
              }
 
@@ -301,25 +379,14 @@ public class Map extends Fragment {
                  }
              }
 
-             if (getLocation() != null) {
-                 drawLocation(getLocation(), canvas);
-             }
+             if (getLocation() != null) { drawLocation(getLocation(), canvas); }
 
-             // Draw floor button
-             paint.setColor(Color.BLUE);
+             // Draw floor buttons
              for (int i = 0; i < floorButtonRect.length; i++) {
-                 if (currentFloor - 1 == i) {
-                     paint.setColor(Color.GREEN);
-                 }
-                 canvas.drawRect(floorButtonRect[i], paint);
                  paint.setColor(Color.BLUE);
+                 if (currentFloor - 1 == i) { paint.setColor(Color.GREEN); }
+                 canvas.drawRect(floorButtonRect[i], paint);
              }
-
-
-
-
-//             paint.setColor(Color.WHITE);
-//             canvas.drawText("Floor One", 0, 50, paint);
 
              myCanvas = canvas;
          }
@@ -352,10 +419,10 @@ public class Map extends Fragment {
 
          protected void drawBoundingBox(AccessPointLocation accessPointLocation, Canvas canvas) {
              Rect rect = new Rect();
-             rect.left = accessPointLocation.getCanvasX() - (int) accessPointLocation.getCanvasDistance();
-             rect.right = accessPointLocation.getCanvasX() + (int) accessPointLocation.getCanvasDistance();
-             rect.bottom = accessPointLocation.getCanvasY() * -1 + (int) accessPointLocation.getCanvasDistance();
-             rect.top = accessPointLocation.getCanvasY() * -1 - (int) accessPointLocation.getCanvasDistance();
+             rect.left = accessPointLocation.getCanvasX() - accessPointLocation.getCanvasDistance();
+             rect.right = accessPointLocation.getCanvasX() + accessPointLocation.getCanvasDistance();
+             rect.bottom = accessPointLocation.getCanvasY() * -1 + accessPointLocation.getCanvasDistance();
+             rect.top = accessPointLocation.getCanvasY() * -1 - accessPointLocation.getCanvasDistance();
 
              paint.setStyle(Paint.Style.STROKE);
              paint.setStrokeWidth(2.0f);
@@ -367,79 +434,9 @@ public class Map extends Fragment {
          protected void drawLocation(double[] coordinates, Canvas canvas) {
              float locationRadius = 8.0f;
              paint.setColor(Color.GREEN);
-             paint.setAlpha(255);
              float cx = ((float) coordinates[0]) * 7.4f;
              float cy = ((float) coordinates[1]) * 7.4f;
              canvas.drawCircle(cx, cy * -1, locationRadius, paint);
-             canvas.drawCircle(0, 0, locationRadius, paint);
          }
-    }
-
-    // ----- FRAGMENT SETUP METHODS -----
-
-    public Map() {}
-
-    public static Map newInstance() {
-        Map fragment = new Map();
-        Bundle args = new Bundle();
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        final MyView view = new MyView(getActivity());
-
-        // Update access point list every 100ms
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                // Make sure that this fragment is attached to the activity
-                if (isAdded()) {
-                    view.invalidate();
-                }
-                handler.postDelayed(this, 100);
-            }
-        }, 100);
-
-        // Setup floor select drop down
-//        View view2 = inflater.inflate(R.layout.fragment_map, container, false);
-//        Spinner dropdown = view2.findViewById(R.id.floorselect);
-//        String[] dropdownItems = new String[]{
-//                "Floor 1", "Floor 2", "Floor 3", "Floor 4"
-//        };
-//        ArrayAdapter<String> dropdownAdapter = new ArrayAdapter<>(
-//                view.getContext(), android.R.layout.simple_spinner_dropdown_item, dropdownItems);
-//        dropdown.setAdapter(dropdownAdapter);
-
-        return view;
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-    public interface OnFragmentInteractionListener {
-        void onFragmentInteraction(Uri uri);
     }
 }
