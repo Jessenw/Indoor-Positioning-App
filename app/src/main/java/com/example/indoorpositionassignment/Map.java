@@ -30,78 +30,20 @@ import com.lemmingapex.trilateration.TrilaterationFunction;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
 
-
 public class Map extends Fragment {
 
     // Floor plan width and height
     final int FLOOR_TWO_WIDTH = 710;
     final int FLOOR_TWO_HEIGHT = 437;
 
-    int currentFloor = 1;
+    int currentFloor = 2;
 
     private OnFragmentInteractionListener mListener;
 
-    /* AccessPointLocation Arrays
-            - X, Y coordinates are based on the origin of the floor plan
-            - Greater X value -> positive X axis on floor plan
-            - Greater Y value -> positive Y axis on floor plan
-     */
-    ArrayList<AccessPointLocation> floorOneAccessPoints = new ArrayList<>(
-            Arrays.asList(
-                    new AccessPointLocation("70:80:8b:d3:5e:60", "", 30, 50, 1),
-                    new AccessPointLocation("70:70:8b:be:01:af", "", 0, 0, 1),
-                    new AccessPointLocation("70:70:8b:d3:5b:6f", "", 0, 0, 1),
-                    new AccessPointLocation("70:70:8b:ce:29:40", "", 0, 0, 1),
-                    new AccessPointLocation("00:2c:c8:cc:30:80", "", 0, 0, 1),
-                    new AccessPointLocation("70:70:8b:be:0c:80", "", 0, 0, 1),
-                    new AccessPointLocation("54:a2:74:d2:34:70", "", 0, 0, 1),
-                    new AccessPointLocation("e8:65:49:40:0c:10", "", 0, 0, 1),
-                    new AccessPointLocation("b0:8b:cf:27:7b:cf", "", 0, 0, 1),
-                    new AccessPointLocation("bc:26:c7:40:c0:00", "", 0, 0, 1),
-                    new AccessPointLocation("b0:8b:cf:35:2f:cf", "", 0, 0, 1),
-                    new AccessPointLocation("00:a2:ee:d3:80:af", "", 0, 0, 1)
-            )
-    );
-
-    ArrayList<AccessPointLocation> floorTwoAccessPoints = new ArrayList<>(
-            Arrays.asList(
-                    new AccessPointLocation("70:b3:17:d5:34:40", "CO228", 44.6, 10.81, 2),
-                    new AccessPointLocation("70:6d:15:28:83:4f", "CO236", 31.1, 25, 2),
-                    new AccessPointLocation("70:6d:15:40:a3:8f", "CO219", 42.56, 29.73, 2),
-                    new AccessPointLocation("70:6d:15:40:cd:2f", "CO246", 13.51, 43.91, 2),         // "70:6d:15:40:cd:20"
-                    new AccessPointLocation("70:b3:17:d5:37:e0", "Outside CO228", 49.32, 6.48, 2),
-                    new AccessPointLocation("70:6d:15:40:56:0f", "Outside CO232", 33.78, 6.08, 2),
-                    new AccessPointLocation("70:6d:15:48:23:20", "Outside CO262", 18.91, 6.48, 2),
-                    new AccessPointLocation("70:6d:15:40:ca:a0", "Outside CO243", 21.62, 36.75, 2),
-                    new AccessPointLocation("70:6d:15:40:b5:c0", "Outside CO217", 60.13, 30.40, 2),
-                    new AccessPointLocation("70:6d:15:36:91:8f", "Outside CO258", 6.75, 8.10, 2),   // 70:6d:15:36:91:80
-                    new AccessPointLocation("00:d7:8f:f3:95:8f", "Outside CO220", 54.05, 11.48, 2)   // 00:d7:8f:f3:95:80
-            )
-    );
-
-    ArrayList<AccessPointLocation> floorThreeAccessPoints = new ArrayList<>(
-            Arrays.asList(
-                   new AccessPointLocation("70:6d:15:36:b6:2f", "School of Mathematics Office", 0, 0, 0),
-                   new AccessPointLocation("bc:26:c7:94:91:40", "Outside CO365", 0, 0, 0),
-                   new AccessPointLocation("70:6d:15:3b:a2:6f", "Outside CO318", 0, 0, 0),
-                   new AccessPointLocation("e8:65:49:16:00:df", "School of Geology Office", 0, 0, 0),
-                   new AccessPointLocation("70:6d:15:05:be:40", "Outside CO305", 0, 0, 0),
-                   new AccessPointLocation("70:6d:15:16:6c:20", "Outside CO329", 0, 0, 0),
-                   new AccessPointLocation("70:6d:15:40:35:cf", "Outside CO353", 0, 0, 0),
-                   new AccessPointLocation("70:6d:15:48:15:2f", "Outside CO338", 0,0, 0)
-            )
-    );
-
-    ArrayList<AccessPointLocation> floorFourAccessPoints = new ArrayList<>(
-            Arrays.asList(
-                    new AccessPointLocation("70:6d:15:40:cd:60", "", 0, 0, 0),
-                    new AccessPointLocation("70:6d:15:35:32:e0", "", 0, 0, 0),
-                    new AccessPointLocation("70:6d:15:35:42:00", "", 0, 0, 0),
-                    new AccessPointLocation("70:6d:15:40:c9:4e", "", 0, 0, 0)
-            )
-    );
-
-    // ----- FRAGMENT SETUP METHODS -----
+    ArrayList<AccessPointLocation> floorOneAccessPoints = AccessPointLists.getFloorOneAccessPoints();
+    ArrayList<AccessPointLocation> floorTwoAccessPoints = AccessPointLists.getFloorTwoAccessPoints();
+    ArrayList<AccessPointLocation> floorThreeAccessPoints = AccessPointLists.getFloorThreeAccessPoints();
+    ArrayList<AccessPointLocation> floorFourAccessPoints = AccessPointLists.getFloorFourAccessPoints();
 
     public Map() {}
 
@@ -118,8 +60,7 @@ public class Map extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final MyView view = new MyView(getActivity());
 
         // Update access point list every 100ms
@@ -128,9 +69,7 @@ public class Map extends Fragment {
             @Override
             public void run() {
                 // Make sure that this fragment is attached to the activity
-                if (isAdded()) {
-                    view.invalidate();
-                }
+                if (isAdded()) { view.invalidate(); }
                 handler.postDelayed(this, 100);
             }
         }, 100);
@@ -193,18 +132,16 @@ public class Map extends Fragment {
             }
         }
 
-        // Get top 3 results
-        int count = 0;
-        if (accessPointList.size() >= 3) {
+        int threshold = 60; // furthermost distance an access point can be from position to be considered strongest
+        if (accessPointList.size() >= 2) {
             for (AccessPoint accessPoint: accessPointList) {
-                if (count < 3) {
-                    AccessPointLocation accessPointLocation = getAccessPointLocationByBSSID(accessPoint.getBSSID());
-                    if (accessPointLocation != null) {
-                        accessPointLocation.setDistance(calculateDistance(accessPoint.getLevel(), accessPoint.getFrequency()));
+                AccessPointLocation accessPointLocation = getAccessPointLocationByBSSID(accessPoint.getBSSID());
+                if (accessPointLocation != null) {
+                    accessPointLocation.setDistance(calculateDistance(accessPoint.getLevel(), accessPoint.getFrequency()));
+                    if (accessPoint.getDistance() < threshold) {
                         strongestAccessPoints.add(accessPointLocation);
-                        count++;
                     }
-                } else { return strongestAccessPoints; }
+                }
             }
         }
 
@@ -247,10 +184,9 @@ public class Map extends Fragment {
         for (int i = 0; i < closestPoints.size(); i++) {
             AccessPointLocation accessPointLocation = closestPoints.get(i);
             // Coordinates have to be converted into meters
-            positions[i][0] = accessPointLocation.getX() / 7.4;
-            positions[i][1] = accessPointLocation.getY() / 7.4;
+            positions[i][0] = accessPointLocation.getY();
+            positions[i][1] = accessPointLocation.getX();
             distances[i] = accessPointLocation.getDistance();
-            int f = 0;
         }
 
         try {
@@ -436,7 +372,7 @@ public class Map extends Fragment {
              paint.setColor(Color.GREEN);
              float cx = ((float) coordinates[0]) * 7.4f;
              float cy = ((float) coordinates[1]) * 7.4f;
-             canvas.drawCircle(cx, cy * -1, locationRadius, paint);
+             canvas.drawCircle(cy, cx * -1, locationRadius, paint);
          }
     }
 }
