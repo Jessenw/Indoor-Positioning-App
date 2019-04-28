@@ -31,11 +31,19 @@ import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer
 
 public class Map extends Fragment {
 
-    // Floor plan width and height
+    final int FLOOR_ONE_WIDTH = 711;
+    final int FLOOR_ONE_HEIGHT = 468;
+
     final int FLOOR_TWO_WIDTH = 710;
     final int FLOOR_TWO_HEIGHT = 437;
 
-    int currentFloor = 4;
+    final int FLOOR_THREE_WIDTH = 709;
+    final int FLOOR_THREE_HEIGHT = 468;
+
+    final int FLOOR_FOUR_WIDTH = 710;
+    final int FLOOR_FOUR_HEIGHT = 209;
+
+    int currentFloor = 2;
 
     private OnFragmentInteractionListener mListener;
 
@@ -165,8 +173,7 @@ public class Map extends Fragment {
     private double calculateDistance(double level, double freq) {
         // https://stackoverflow.com/questions/11217674/how-to-calculate-distance-from-wifi-router-using-signal-strength
         // http://rvmiller.com/2013/05/part-1-wifi-based-trilateration-on-android/
-        double exp = (27.55 - (20 * Math.log10(freq)) + Math.abs(level)) / 20.0;
-        return Math.pow(10.0, exp);
+        return Math.pow(10.0, (27.55 - (20 * Math.log10(freq)) + Math.abs(level)) / 20.0);
     }
 
     private double[] getLocation() {
@@ -183,6 +190,10 @@ public class Map extends Fragment {
             positions[i][1] = accessPointLocation.getX();
             distances[i] = accessPointLocation.getDistance();
         }
+
+//        try {
+//            return LocationSolver.getLocation(positions, distances);
+//        } catch (IllegalArgumentException e) {}
 
         try {
             NonLinearLeastSquaresSolver solver = new NonLinearLeastSquaresSolver(new TrilaterationFunction(positions, distances), new LevenbergMarquardtOptimizer());
@@ -212,10 +223,10 @@ public class Map extends Fragment {
 
         // Floor button bounding boxes
         Rect[] floorButtonRect = new Rect[]{
-                new Rect(0, 40, 180, 100),
-                new Rect(190 , 40, 370, 100),
-                new Rect(380 , 40, 560, 100),
-                new Rect(570, 40, 750, 100)
+                new Rect(0, 40, 100, 80),
+                new Rect(110 , 40, 210, 80),
+                new Rect(220 , 40, 320, 80),
+                new Rect(330, 40, 430, 80)
         };
 
         public MyView(Context context) {
@@ -255,19 +266,26 @@ public class Map extends Fragment {
             // Draw floor-plan
              Bitmap floorPlan = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.cotton_level_1);
              if (currentFloor == 1) {
+                 floorPlanWidth = FLOOR_ONE_WIDTH;
+                 floorPlanHeight = FLOOR_ONE_HEIGHT;
                  floorPlan = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.cotton_level_1);
              } else if (currentFloor == 2) {
+                 floorPlanWidth = FLOOR_TWO_WIDTH;
+                 floorPlanHeight = FLOOR_TWO_HEIGHT;
                  floorPlan = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.cotton_level_2);
              } else if (currentFloor == 3) {
+                 floorPlanWidth = FLOOR_THREE_WIDTH;
+                 floorPlanHeight = FLOOR_THREE_HEIGHT;
                  floorPlan = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.cotton_level_3);
              } else if (currentFloor == 4) {
+                 floorPlanWidth = FLOOR_FOUR_WIDTH;
+                 floorPlanHeight = FLOOR_FOUR_HEIGHT;
                  floorPlan = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.cotton_level_4);
              }
              canvas.drawBitmap(floorPlan, null, new Rect(0, 0, floorPlanWidth, floorPlanHeight), null);
 
              // Move origin to origin of floor plan
              canvas.translate(14, 408);
-             canvas.drawCircle(0,0, 10, paint);
 
              // Draw access points on current floor
             ArrayList<AccessPointLocation> current = floorOneAccessPoints;
@@ -300,17 +318,21 @@ public class Map extends Fragment {
                              paint.setColor(Color.CYAN);
                              break;
                      }
-                     drawClosestAccessPoint(accessPointLocation, canvas);
+                     drawClosestAccessPoint(accessPointLocation, accessPointLocation.getBSSID(), canvas);
+                     paint.setTextSize(15);
+                     paint.setColor(Color.BLACK);
+                     canvas.drawText(accessPointLocation.getBSSID(), 0 + (i * 130), 100, paint);
                      i++;
-                 }
-
-                 // Draw bounding box of access points radius
-                 for (AccessPointLocation accessPointLocation : strongestAccessPoints) {
-                     drawBoundingBox(accessPointLocation, canvas);
                  }
              }
 
-             if (getLocation() != null) { drawLocation(getLocation(), canvas); }
+             if (getLocation() != null) {
+                 double[] loc = getLocation();
+                 drawLocation(loc, canvas);
+                 paint.setTextSize(15);
+                 paint.setColor(Color.BLACK);
+                 canvas.drawText("Location X : " + loc[0] + " Location Y: " + loc[1], 0, 120, paint);
+             }
 
              // Draw floor buttons
              for (int i = 0; i < floorButtonRect.length; i++) {
@@ -319,6 +341,9 @@ public class Map extends Fragment {
                  canvas.drawRect(floorButtonRect[i], paint);
              }
 
+             paint.setColor(Color.GREEN);
+             canvas.drawCircle(363, -50, 8, paint);
+
              myCanvas = canvas;
          }
 
@@ -326,18 +351,19 @@ public class Map extends Fragment {
             int radius = 8;
             paint.setColor(Color.BLUE);
             canvas.drawCircle(x, y, radius, paint);
-            paint.setColor(Color.RED);
-            canvas.drawText(BSSID, x, y + 20, paint);
         }
 
-        protected void drawClosestAccessPoint(AccessPointLocation accessPointLocation, Canvas canvas) {
+        protected void drawClosestAccessPoint(AccessPointLocation accessPointLocation, String BSSID, Canvas canvas) {
             int cx = accessPointLocation.getCanvasX();
             int cy = accessPointLocation.getCanvasY();
 
             // Draw distance radius
             float areaRadius = (float) accessPointLocation.getCanvasDistance();
-            paint.setAlpha(60);
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeWidth(4);
             canvas.drawCircle(cx, cy * -1, areaRadius, paint);
+            paint.setStyle(Paint.Style.FILL_AND_STROKE);
+            paint.setStrokeWidth(1);
 
             // Change access point location colour to red
             float locationRadius = 8.0f;
@@ -346,26 +372,14 @@ public class Map extends Fragment {
             canvas.drawCircle(cx, cy * -1, locationRadius, paint);
         }
 
-         protected void drawBoundingBox(AccessPointLocation accessPointLocation, Canvas canvas) {
-             Rect rect = new Rect();
-             rect.left = accessPointLocation.getCanvasX() - accessPointLocation.getCanvasDistance();
-             rect.right = accessPointLocation.getCanvasX() + accessPointLocation.getCanvasDistance();
-             rect.bottom = accessPointLocation.getCanvasY() * -1 + accessPointLocation.getCanvasDistance();
-             rect.top = accessPointLocation.getCanvasY() * -1 - accessPointLocation.getCanvasDistance();
-
-             paint.setStyle(Paint.Style.STROKE);
-             paint.setStrokeWidth(2.0f);
-             paint.setColor(Color.rgb(255, 165, 0));
-             canvas.drawRect(rect, paint);
-             paint.setStyle(Paint.Style.FILL);
-         }
-
          protected void drawLocation(double[] coordinates, Canvas canvas) {
-            float locationRadius = 8.0f;
-            paint.setColor(Color.GREEN);
-            float cx = ((float) coordinates[0]) * 7.4f;
-            float cy = ((float) coordinates[1]) * 7.4f;
-            canvas.drawCircle(cy, cx * -1, locationRadius, paint);
+            if (coordinates != null) {
+                float locationRadius = 8.0f;
+                paint.setColor(Color.GREEN);
+                float cx = ((float) coordinates[0]) * 7.4f;
+                float cy = ((float) coordinates[1]) * 7.4f;
+                canvas.drawCircle(cy, cx * -1, locationRadius, paint);
+            }
          }
     }
 }

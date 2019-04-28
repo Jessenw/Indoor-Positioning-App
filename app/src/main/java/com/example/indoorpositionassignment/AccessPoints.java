@@ -26,7 +26,7 @@ public class AccessPoints extends Fragment {
 
     private ListView listView;
 
-    public AccessPoints() { /* Required empty public constructor */ }
+    public AccessPoints() {}
 
     public static AccessPoints newInstance() {
         AccessPoints fragment = new AccessPoints();
@@ -83,6 +83,10 @@ public class AccessPoints extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
+    /**
+     *
+     * @param rootView
+     */
     public void generateAccessPointList(View rootView) {
         WifiManager wifiManager = (WifiManager) getContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiManager.startScan();
