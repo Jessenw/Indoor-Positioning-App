@@ -1,16 +1,17 @@
 package com.example.indoorpositionassignment;
 
-import java.util.Comparator;
-
-public class AccessPoint implements Comparator<AccessPoint> {
+/**
+ * Used to store information about an Access Point collected by WiFiManager
+ */
+public class Router {
 
     private String SSID;
     private String BSSID;       // MAC Address
-    private int    level;       // signal strength
     private double distance;    // approximate distance to AP
-    private int frequency;
+    private int level;          // signal strength
+    private int frequency;      // signal frequency in MHz
 
-    public AccessPoint(String SSID, String BSSID, int level, double distance, int frequency) {
+    public Router(String SSID, String BSSID, int level, double distance, int frequency) {
         this.SSID = SSID;
         this.BSSID = BSSID;
         this.level = level;
@@ -36,15 +37,6 @@ public class AccessPoint implements Comparator<AccessPoint> {
 
     public int getFrequency() {
         return frequency;
-    }
-
-    public int compare(AccessPoint o1, AccessPoint o2) {
-        double distance1 = o1.getDistance();
-        double distance2 = o2.getDistance();
-
-        if (distance1 > distance2) return -1;
-        else if (distance1 < distance2) return 1;
-        else return 0;
     }
 
     @Override

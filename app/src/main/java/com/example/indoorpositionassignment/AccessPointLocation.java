@@ -7,6 +7,7 @@ public class AccessPointLocation {
     private double x, y; // in meters
     private int floor;
     private double distance;
+    private double signalStrength;
 
     double toPixels = 7.4; // 1m = 7.4
 
@@ -19,7 +20,13 @@ public class AccessPointLocation {
         this.distance = 0.0;
     }
 
-    public void setDistance(double distance) { this.distance = distance; }
+    public void setDistance(double distance) {
+        this.distance = distance;
+    }
+
+    public void setSignalStrength(double signalStrength) {
+        this.signalStrength = signalStrength;
+    }
 
     public String getBSSID() {
         return BSSID;
@@ -33,11 +40,23 @@ public class AccessPointLocation {
         return y;
     }
 
-    public int getCanvasX() { return (int) (this.x * toPixels); }
+    public int getCanvasX() {
+        return (int) (this.x * toPixels);
+    }
 
-    public int getCanvasY() { return (int) (this.y * toPixels); }
+    public int getCanvasY() {
+        return (int) (this.y * toPixels);
+    }
 
-    public double getDistance() { return distance; }
+    public double getDistance() {
+        return distance;
+    }
 
-    public int getCanvasDistance() { return (int) (distance * toPixels); }
+    public double getSignalStrength() {
+        return signalStrength;
+    }
+
+    public int getCanvasDistance() {
+        return (int) (distance * toPixels);
+    }
 }

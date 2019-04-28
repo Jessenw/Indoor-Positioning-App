@@ -15,31 +15,37 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
 
+/**
+ * Highest level class. Handles settings up the navigation bar and Fragments.
+ * This class is also responsible for initialising the WiFiManager for the project since
+ * AccessPointHandler can not give WiFiManager context.
+ */
+public class MainActivity extends AppCompatActivity implements
+        AccessPointFragment.OnFragmentInteractionListener, MapFragment.OnFragmentInteractionListener {
 
-public class MainActivity extends AppCompatActivity implements AccessPoints.OnFragmentInteractionListener, Map.OnFragmentInteractionListener {
+    final int MY_PERMISSION_FINE_LOCATION = 0;
 
-    int MY_PERMISSION_FINE_LOCATION = 0;
-
-    WifiManager wifiManager;
+    static WifiManager wifiManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Request location permissions
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSION_FINE_LOCATION);
+        // request location permissions
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSION_FINE_LOCATION);
 
-        // Check if location permissions are granted
+        // check if location permissions are granted
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED)
             System.out.println("ACCESS_FINE_LOCATION: PERMISSION_GRANTED");
         else
             System.out.println("ACCESS_FINE_LOCATION: PERMISSION_DENIED");
 
-        // Create Wifi Manager
-        wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        wifiManager = (WifiManager) this.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
+        // set up bottom navigation bar
         BottomNavigationView bottomNavigationView = findViewById(R.id.navigation);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -47,10 +53,10 @@ public class MainActivity extends AppCompatActivity implements AccessPoints.OnFr
                 Fragment selectedFragment = null;
                 switch (menuItem.getItemId()) {
                     case R.id.access_points_menu_item:
-                        selectedFragment = AccessPoints.newInstance();
+                        selectedFragment = AccessPointFragment.newInstance();
                         break;
                     case R.id.map_menu_item:
-                        selectedFragment = Map.newInstance();
+                        selectedFragment = MapFragment.newInstance();
                         break;
                 }
                 FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -60,20 +66,16 @@ public class MainActivity extends AppCompatActivity implements AccessPoints.OnFr
             }
         });
 
-        // Display first fragment
+        // display first fragment
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.frame_layout, AccessPoints.newInstance());
+        transaction.replace(R.id.frame_layout, MapFragment.newInstance());
         transaction.commit();
-
-        // Accessing menu item programmatically
-        // bottomNavigationView.getMenu().getItem(1).setChecked(true);
     }
 
     @Override
-    public void onFragmentInteraction(Uri uri) {
-    }
+    public void onFragmentInteraction(Uri uri) {}
 
-    public WifiManager getWifiManager() {
+    public static WifiManager getWifiManager() {
         return wifiManager;
     }
 }
