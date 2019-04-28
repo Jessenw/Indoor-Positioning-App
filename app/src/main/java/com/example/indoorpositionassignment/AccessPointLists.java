@@ -12,18 +12,18 @@ public class AccessPointLists {
     */
     private static ArrayList<AccessPointLocation> floorOneAccessPoints = new ArrayList<>(
             Arrays.asList(
-                    new AccessPointLocation("70:80:8b:d3:5e:60", "", 30, 50, 1),
-                    new AccessPointLocation("70:70:8b:be:01:af", "", 0, 0, 1),
-                    new AccessPointLocation("70:70:8b:d3:5b:6f", "", 0, 0, 1),
-                    new AccessPointLocation("70:70:8b:ce:29:40", "", 0, 0, 1),
-                    new AccessPointLocation("00:2c:c8:cc:30:80", "", 0, 0, 1),
-                    new AccessPointLocation("70:70:8b:be:0c:80", "", 0, 0, 1),
-                    new AccessPointLocation("54:a2:74:d2:34:70", "", 0, 0, 1),
-                    new AccessPointLocation("e8:65:49:40:0c:10", "", 0, 0, 1),
-                    new AccessPointLocation("b0:8b:cf:27:7b:cf", "", 0, 0, 1),
-                    new AccessPointLocation("bc:26:c7:40:c0:00", "", 0, 0, 1),
-                    new AccessPointLocation("b0:8b:cf:35:2f:cf", "", 0, 0, 1),
-                    new AccessPointLocation("00:a2:ee:d3:80:af", "", 0, 0, 1)
+                    new AccessPointLocation("70:80:8b:d3:5e:60", "", 5, 40, 1),
+                    new AccessPointLocation("70:70:8b:be:01:af", "", 10, 41, 1),
+                    new AccessPointLocation("70:70:8b:d3:5b:6f", "", 24, 41.5, 1),
+                    new AccessPointLocation("70:70:8b:ce:29:40", "", 28.5, 40, 1),
+                    new AccessPointLocation("00:2c:c8:cc:30:80", "", 45.5, 40, 1),
+                    new AccessPointLocation("70:70:8b:be:0c:80", "", 71, 40, 1),
+                    new AccessPointLocation("54:a2:74:d2:34:70", "", 53, 35, 1),
+                    new AccessPointLocation("e8:65:49:40:0c:10", "", 53, 27.5, 1),
+                    new AccessPointLocation("b0:8b:cf:27:7b:cf", "", 82, 15.5, 1),
+                    new AccessPointLocation("bc:26:c7:40:c0:00", "", 48.6, 10.5, 1),
+                    new AccessPointLocation("b0:8b:cf:35:2f:cf", "", 39, 10.5, 1),
+                    new AccessPointLocation("00:a2:ee:d3:80:af", "", -0.5, 19, 1)
             )
     );
 
@@ -45,14 +45,14 @@ public class AccessPointLists {
 
     private static ArrayList<AccessPointLocation> floorThreeAccessPoints = new ArrayList<>(
             Arrays.asList(
-                    new AccessPointLocation("70:6d:15:36:b6:2f", "School of Mathematics Office", 0, 0, 0),
-                    new AccessPointLocation("bc:26:c7:94:91:40", "Outside CO365", 0, 0, 0),
-                    new AccessPointLocation("70:6d:15:3b:a2:6f", "Outside CO318", 0, 0, 0),
-                    new AccessPointLocation("e8:65:49:16:00:df", "School of Geology Office", 0, 0, 0),
-                    new AccessPointLocation("70:6d:15:05:be:40", "Outside CO305", 0, 0, 0),
-                    new AccessPointLocation("70:6d:15:16:6c:20", "Outside CO329", 0, 0, 0),
-                    new AccessPointLocation("70:6d:15:40:35:cf", "Outside CO353", 0, 0, 0),
-                    new AccessPointLocation("70:6d:15:48:15:2f", "Outside CO338", 0,0, 0)
+                    new AccessPointLocation("70:6d:15:36:b6:2f", "School of Mathematics Office", 10.5, 11.5, 0),
+                    new AccessPointLocation("bc:26:c7:94:91:40", "Outside CO365", 2, 14.5, 0),
+                    new AccessPointLocation("70:6d:15:3b:a2:6f", "Outside CO318", 44, 10, 0),
+                    new AccessPointLocation("e8:65:49:16:00:df", "School of Geology Office", 60, 13, 0),
+                    new AccessPointLocation("70:6d:15:05:be:40", "Outside CO305", 77, 15, 0),
+                    new AccessPointLocation("70:6d:15:16:6c:20", "Outside CO329", 30, 30, 0),
+                    new AccessPointLocation("70:6d:15:40:35:cf", "Outside CO353", 12, 30, 0),
+                    new AccessPointLocation("70:6d:15:48:15:2f", "Outside CO338", 28.5,41.5, 0)
             )
     );
 

@@ -19,7 +19,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -36,7 +35,7 @@ public class Map extends Fragment {
     final int FLOOR_TWO_WIDTH = 710;
     final int FLOOR_TWO_HEIGHT = 437;
 
-    int currentFloor = 2;
+    int currentFloor = 4;
 
     private OnFragmentInteractionListener mListener;
 
@@ -137,7 +136,7 @@ public class Map extends Fragment {
             for (AccessPoint accessPoint: accessPointList) {
                 AccessPointLocation accessPointLocation = getAccessPointLocationByBSSID(accessPoint.getBSSID());
                 if (accessPointLocation != null) {
-                    accessPointLocation.setDistance(calculateDistance(accessPoint.getLevel(), accessPoint.getFrequency()));
+                    accessPointLocation.setDistance(calculateDistance(accessPoint.getLevel(), accessPoint.getFrequency()) * 0.97);
                     if (accessPoint.getDistance() < threshold) {
                         strongestAccessPoints.add(accessPointLocation);
                     }
@@ -150,15 +149,11 @@ public class Map extends Fragment {
 
     private AccessPointLocation getAccessPointLocationByBSSID(String BSSID) {
         ArrayList<AccessPointLocation> current = floorOneAccessPoints;
-        if (currentFloor == 1) {
-            current = floorOneAccessPoints;
-        } else if (currentFloor == 2) {
-            current = floorTwoAccessPoints;
-        } else if (currentFloor == 3) {
-            current = floorThreeAccessPoints;
-        } else if (currentFloor == 4) {
-            current = floorFourAccessPoints;
-        }
+        if (currentFloor == 1) current = floorOneAccessPoints;
+        else if (currentFloor == 2) current = floorTwoAccessPoints;
+        else if (currentFloor == 3) current = floorThreeAccessPoints;
+        else if (currentFloor == 4) current = floorFourAccessPoints;
+
         for (AccessPointLocation accessPointLocation: current) {
             String accessPointLocationBSSID = accessPointLocation.getBSSID();
             if (accessPointLocationBSSID.equals(BSSID)) { return accessPointLocation; }
@@ -197,7 +192,7 @@ public class Map extends Fragment {
             System.out.println(calculatedPosition[0] + ", " + calculatedPosition[1]);
             return calculatedPosition;
         } catch (IllegalArgumentException e) {
-
+            //e.printStackTrace();
         }
         return null;
     }
@@ -328,13 +323,11 @@ public class Map extends Fragment {
          }
 
         protected void drawAccessPoint(int x, int y, String BSSID, Canvas canvas) {
-            int cx = x;
-            int cy = y;
             int radius = 8;
             paint.setColor(Color.BLUE);
-            canvas.drawCircle(cx, cy, radius, paint);
+            canvas.drawCircle(x, y, radius, paint);
             paint.setColor(Color.RED);
-            canvas.drawText(BSSID, cx, cy + 20, paint);
+            canvas.drawText(BSSID, x, y + 20, paint);
         }
 
         protected void drawClosestAccessPoint(AccessPointLocation accessPointLocation, Canvas canvas) {
@@ -368,11 +361,11 @@ public class Map extends Fragment {
          }
 
          protected void drawLocation(double[] coordinates, Canvas canvas) {
-             float locationRadius = 8.0f;
-             paint.setColor(Color.GREEN);
-             float cx = ((float) coordinates[0]) * 7.4f;
-             float cy = ((float) coordinates[1]) * 7.4f;
-             canvas.drawCircle(cy, cx * -1, locationRadius, paint);
+            float locationRadius = 8.0f;
+            paint.setColor(Color.GREEN);
+            float cx = ((float) coordinates[0]) * 7.4f;
+            float cy = ((float) coordinates[1]) * 7.4f;
+            canvas.drawCircle(cy, cx * -1, locationRadius, paint);
          }
     }
 }
